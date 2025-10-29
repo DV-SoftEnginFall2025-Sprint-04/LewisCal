@@ -26,10 +26,11 @@ header {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid #e1e4e8;
+    /* Lewis Red #940731*/
 }
 
 h1 {
-    font-size: 2.5rem;
+    font-size: 3rem;
     margin-bottom: 0.5rem;
     color: #2c3e50;
 }
