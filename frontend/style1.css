@@ -29,12 +29,20 @@ body {
     flex: 1;
 }
 
+/* Header */
 header {
-    text-align: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e1e4e8;
-    /* Lewis Red #940731*/
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+header h1 {
+  font-size: 2.4rem;
+  color: #1f2937;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.25rem;
+}
+.subtitle {
+  color: #6b7280;
+  font-size: 1rem;
 }
 
 h1 {
@@ -55,17 +63,17 @@ h3 {
     color: #2c3e50;
 }
 
-.subtitle {
-    font-size: 1.2rem;
-    color: #7f8c8d;
-}
-
 .welcome-section {
     background-color: white;
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     margin-bottom: 2rem;
+}
+
+.welcome-section h2{
+    margin-bottom: 1rem;
+    text-align: center;
 }
 
 .intro-text {
@@ -77,21 +85,32 @@ h3 {
     text-align: center;
 }
 
+/* Features */
 .features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
 }
-
 .feature {
-    text-align: center;
-    padding: 1rem;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+  text-align: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.feature:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(16,24,40,0.08);
+}
+.feature-icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.6rem;
 }
 
-.feature-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+nav {
+    margin-top: 1rem;
 }
 
 .nav-links {
@@ -147,13 +166,86 @@ h3 {
 }
 
 footer {
-    text-align: center;
     margin-top: auto;
-    padding-top: 1rem;
-    border-top: 1px solid #e1e4e8;
-    color: #7f8c8d;
-    font-size: 0.9rem;
+    padding: 18px 0;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.95rem;
     background-color: white;
+}
+
+/* Import Section Styling */
+.import-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px;
+    margin: 40px 0;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 820px;
+    margin: 28px auto;
+}
+
+.import-section h2 {
+    color: #ffffff;
+    font-size: 28px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.import-section p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+.import-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.import-container input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.import-container input:focus {
+    outline: none;
+    border-color: #ffffff;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.import-container input::placeholder {
+    color: #999;
+}
+
+.import-container button {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    background: #ffffff;
+    color: #4f46e5;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.import-container button:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.import-container button:active {
+    transform: translateY(0);
 }
 
 /* Responsive design */
@@ -211,99 +303,18 @@ footer {
     }
 }
 
-
-/* ...existing code... */
-
-/* Import Section Styling */
-.import-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 40px 20px;
-    margin: 40px 0;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-.import-section h2 {
-    color: #ffffff;
-    font-size: 28px;
-    margin-bottom: 10px;
-    font-weight: 600;
-}
-
-.import-section p {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 16px;
-    margin-bottom: 25px;
-}
-
-.import-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.import-container input {
-    padding: 12px 16px;
-    font-size: 14px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.95);
-    color: #333;
-    transition: all 0.3s ease;
-}
-
-.import-container input:focus {
-    outline: none;
-    border-color: #ffffff;
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
-}
-
-.import-container input::placeholder {
-    color: #999;
-}
-
-.import-container button {
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    background: #ffffff;
-    color: #667eea;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.import-container button:hover {
-    background: #f0f0f0;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.import-container button:active {
-    transform: translateY(0);
-}
-
-/* Responsive for import section */
-@media (max-width: 600px) {
-    .import-section {
-        padding: 30px 15px;
-        margin: 30px 0;
-    }
-
-    .import-section h2 {
-        font-size: 22px;
-    }
-
-    .import-section p {
-        font-size: 14px;
-    }
-
-    .import-container {
-        max-width: 100%;
-    }
+/* Make import input and button inline on wider screens */
+@media (min-width: 601px) {
+  .import-container {
+    flex-direction: row;
+    align-items: center;
+  }
+  .import-container input {
+    flex: 1;
+    margin-right: 12px;
+  }
+  .import-container button {
+    flex: 0 0 auto;
+    min-width: 140px;
+  }
 }
