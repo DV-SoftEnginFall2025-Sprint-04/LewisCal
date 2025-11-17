@@ -8,6 +8,8 @@ const app = express();
 
 // Enable CORS
 app.use(cors());
+app.use(express.json());
+
 
 const PORT = process.env.PORT || 3001;
 
@@ -15,6 +17,27 @@ app.use("/api/refresh", refreshRoute);
 
 app.get("/", (req, res) => {
     res.send("LewisCal is running");
+});
+
+app.post('/import-ics', async (req, res) => {
+    try {
+        const { url } = req.body;
+
+        if (!url) {
+            return res.status(400).json({ error: "Missing calendar URL" });
+        }
+
+        const response = await fetch(url);
+        const icsText = await response.text();
+
+        const events = ical.parseICS(icsText);
+
+        res.json(events);
+
+    } catch (error) {
+        console.error("ICS import failed:", error);
+        res.status(500).json({ error: "Failed to import calendar" });
+    }
 });
 
 app.listen(PORT, () => {
