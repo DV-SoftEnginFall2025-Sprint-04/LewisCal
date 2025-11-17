@@ -210,3 +210,100 @@ footer {
         width: 50px; /* smaller logo on mobile */
     }
 }
+
+
+/* ...existing code... */
+
+/* Import Section Styling */
+.import-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px;
+    margin: 40px 0;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.import-section h2 {
+    color: #ffffff;
+    font-size: 28px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.import-section p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+.import-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.import-container input {
+    padding: 12px 16px;
+    font-size: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.import-container input:focus {
+    outline: none;
+    border-color: #ffffff;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.import-container input::placeholder {
+    color: #999;
+}
+
+.import-container button {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    background: #ffffff;
+    color: #667eea;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.import-container button:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.import-container button:active {
+    transform: translateY(0);
+}
+
+/* Responsive for import section */
+@media (max-width: 600px) {
+    .import-section {
+        padding: 30px 15px;
+        margin: 30px 0;
+    }
+
+    .import-section h2 {
+        font-size: 22px;
+    }
+
+    .import-section p {
+        font-size: 14px;
+    }
+
+    .import-container {
+        max-width: 100%;
+    }
+}
