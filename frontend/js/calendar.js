@@ -6,6 +6,7 @@ async function checkForUpdates() {
         if (data.updated && data.events) {
             console.log("Updated calendar data:", data.events);
             displayEvents(data.events);
+            setMessage("Calendar updated!", false);
         }
     } catch (error) {
         console.error('Failed to check for updates:', error);
