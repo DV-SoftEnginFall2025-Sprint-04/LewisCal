@@ -54,3 +54,25 @@ document.addEventListener('DOMContentLoaded', fetchCalendarEvents);
 
 checkForUpdates(); // immediately on load
 setInterval(checkForUpdates, 60000); // check every minute
+
+async function importCalendar() {
+    const url = document.getElementById("calendarLink").value;
+
+    if (!url) {
+        alert("Please paste a calendar link first.");
+        return;
+    }
+
+    const response = await fetch('/import-ics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+    });
+
+    const events = await response.json();
+    console.log("Imported events:", events);
+
+    if (events) {
+        displayEvents(Object.values(events));
+    }
+}
