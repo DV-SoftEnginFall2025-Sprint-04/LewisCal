@@ -1,10 +1,19 @@
 async function checkForUpdates() {
-    const res = await fetch("http://localhost:3001/api/refresh"); // replace with azure hosted url later
-    const data = await res.json();
+    try {
+        const res = await fetch("http://localhost:3001/api/refresh");
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const data = await res.json();
 
-    if (data.updated) {
-        console.log("Updated calendar data:", data.events);
-        //need to display updated events in the calendar UI
+        if (data.updated && data.events) {
+            console.log("Updated calendar data:", data.events);
+            displayEvents(data.events);
+        }
+    } catch (error) {
+        console.error('Failed to check for updates:', error);
     }
 }
 
@@ -16,20 +25,25 @@ async function fetchCalendarEvents() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const events = await response.json();
-        console.log('Events fetched:', events);
+        const data = await response.json();
+        console.log('Events fetched:', data);
         
-        // Process and display events
-        displayEvents(events);
+        if (data.events) {
+            displayEvents(data.events);
+        }
         
-        return events;
+        return data.events;
     } catch (error) {
         console.error('Failed to fetch calendar events:', error);
     }
 }
 
 function displayEvents(events) {
-    // Add your event display logic here
+    if (!events || events.length === 0) {
+        console.log('No events to display');
+        return;
+    }
+    
     events.forEach(event => {
         console.log(`Event: ${event.summary} at ${event.start}`);
     });

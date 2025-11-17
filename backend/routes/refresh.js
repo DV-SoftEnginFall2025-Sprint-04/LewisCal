@@ -1,47 +1,39 @@
 const express = require('express');
-const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const { parseICS } = require('../utils/parseICS');
 
 const router = express.Router();
 
-let lastHash = null;
-let lastEvents = [];
-
-// local or remote calendar source
-const calendarSource = "C:\\Users\\Ilias Yeck\\Documents\\GitHub\\LewisCal\\backend\\calendar.ics";
-
-
-router.get("/", async (req, res) => {
+router.get('/', (req, res) => {
     try {
-        let icsText;
-
-        if (calendarSource.startsWith("http")) {
-            const response = await fetch(calendarSource);
-            icsText = await response.text();
-        } else {
-            icsText = fs.readFileSync(calendarSource, "utf8");
-        }
-
-        const newHash = crypto.createHash("sha256").update(icsText).digest("hex");
-
-        if (newHash !== lastHash) {
-            lastHash = newHash;
-            lastEvents = parseICS(icsText);
-
-            return res.json({
-                updated: true,
-                events: lastEvents
+        // Use relative path to calendar.ics
+        const calendarPath = path.join(__dirname, '..', 'calendar.ics');
+        
+        // Check if file exists
+        if (!fs.existsSync(calendarPath)) {
+            return res.status(404).json({ 
+                error: 'Calendar file not found',
+                path: calendarPath 
             });
         }
-
-        res.json({ updated: false });
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Unable to refresh calendar." });
+        
+        // Read and parse the ICS file
+        const icsContent = fs.readFileSync(calendarPath, 'utf-8');
+        const events = parseICS(icsContent);
+        
+        // Return events
+        res.json({ 
+            updated: true, 
+            events: events,
+            count: events.length
+        });
+    } catch (error) {
+        console.error('Error in refresh route:', error);
+        res.status(500).json({ 
+            error: 'Unable to refresh calendar.',
+            details: error.message 
+        });
     }
 });
 
