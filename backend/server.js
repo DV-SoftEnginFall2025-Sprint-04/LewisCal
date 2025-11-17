@@ -1,7 +1,12 @@
 const express = require('express');
+const cors = require('cors');
 const refreshRoute = require('./routes/refresh');
 
 const app = express();
+
+// Enable CORS
+app.use(cors());
+
 const PORT = process.env.PORT || 3001;
 
 app.use("/api/refresh", refreshRoute);
