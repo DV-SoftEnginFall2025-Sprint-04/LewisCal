@@ -1,72 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LewisCal - Welcome</title>
-    <link rel="icon" href="Images/calendar_icon.png" />
-    <link rel="stylesheet" href="style1.css" />
-  </head>
 
-  <body>
-    <div class="container">
-      <header>
-        <h1>LewisCal</h1>
-        <p class="subtitle">Your simple, elegant calendar solution</p>
-      </header>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LewisCal - Welcome</title>
+  <link rel="icon" href="Images/calendar_icon.png" />
+  <link rel="stylesheet" href="style1.css" />
+</head>
 
-      <section class="import-section">
-        <h2>Import Calendar</h2>
-        <p>Paste .ics calendar link below to import events:</p>
+<body>
+  <div class="container">
+    <header>
+      <h1>LewisCal</h1>
+      <p class="subtitle">Your simple, elegant calendar solution</p>
+    </header>
 
-        <div class="import-container">
-          <input
-            type="text"
-            id="calendarLink"
-            placeholder="Paste .ics calendar link here" />
-          <button onclick="importCalendar()">Import Calendar</button>
-        </div>
-      </section>
+    <section class="import-section">
+      <h2>Import Calendar</h2>
+      <p>Paste .ics calendar link below to import events:</p>
 
-      <section class="welcome-section">
-        <h2>Welcome to LewisCal</h2>
-        <p>
-          LewisCal is a straightforward calendar application designed to help
-          you organize your schedule with ease. Whether you're managing personal
-          appointments or coordinating team events, LewisCal has you covered.
-        </p>
-
-        <div class="features">
-          <div class="feature">
-            <div class="feature-icon">📅</div>
-            <h3>Easy Scheduling</h3>
-            <p>Quickly add and manage your events</p>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">🔔</div>
-            <h3>Smart Reminders</h3>
-            <p>Never miss an important appointment</p>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">👥</div>
-            <h3>Team Collaboration</h3>
-            <p>Share calendars with your team</p>
-          </div>
-        </div>
-      </section>
-      <div id="messageBox" class="message-box"></div>
-
-      <div class="nav-links">
-        <a href="index.html" class="btn">Home</a>
-        <a href="credits.html" class="btn">Meet the Developers</a>
+      <div class="import-container">
+        <input type="text" id="calendarLink" placeholder="Paste .ics calendar link here" />
+        <button id="importBtn" onclick="importCalendar()">Import Calendar</button>
       </div>
+      <!-- Message displays below input and button -->
+      <div id="calendarMessage" class="calendar-message"></div>
+    </section>
+
+    <section class="welcome-section">
+      <h2>Welcome to LewisCal</h2>
+      <p>
+        LewisCal is a straightforward calendar application designed to help
+        you organize your schedule with ease. Whether you're managing personal
+        appointments or coordinating team events, LewisCal has you covered.
+      </p>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">📅</div>
+          <h3>Easy Scheduling</h3>
+          <p>Quickly add and manage your events</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔔</div>
+          <h3>Smart Reminders</h3>
+          <p>Never miss an important appointment</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">👥</div>
+          <h3>Team Collaboration</h3>
+          <p>Share calendars with your team</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="nav-links">
+      <a href="index.html" class="btn">Home</a>
+      <a href="credits.html" class="btn">Meet the Developers</a>
     </div>
+  </div>
 
-    <footer>
-      <div class="container" style="padding: 0.5rem;">
-        <p>&copy; 2025 LewisCal. All rights reserved.</p>
-      </div>
-    </footer>
-    <script src="js/calendar.js"></script>
-  </body>
+  <footer>
+    <div class="container" style="padding: 0.5rem;">
+      <p>&copy; 2025 LewisCal. All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="js/calendar.js"></script>
+</body>
+
 </html>

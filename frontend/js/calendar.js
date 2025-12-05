@@ -73,9 +73,18 @@ function getMessageEl() {
 }
 
 function setMessage(text, isError = false) {
-    const el = getMessageEl();
+    const el = document.getElementById('calendarMessage');
+    if (!el) return;
+    
     el.textContent = text;
-    el.style.color = isError ? '#b91c1c' : '#064e3b';
+    
+    if (text) {
+        el.classList.add('show');
+        el.classList.toggle('error', isError);
+        el.classList.toggle('success', !isError);
+    } else {
+        el.classList.remove('show', 'error', 'success');
+    }
 }
 
 /**
