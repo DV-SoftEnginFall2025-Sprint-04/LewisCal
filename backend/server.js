@@ -1,56 +1,37 @@
 const express = require('express');
 const cors = require('cors');
 const refreshRoute = require('./routes/refresh');
-const fetch = require('node-fetch');
-const ical = require('ical');
 const fs = require('fs');
 const path = require('path');
 
 const app = express();
 
-// Enable CORS
-app.use(cors());
-app.use(express.json());
-
-
 const PORT = process.env.PORT || 3001;
 
+//handle CORS
+app.use(cors({
+    origin: "*",   // allow all origins
+    methods: ["GET", "POST"]
+}));
+
+app.use(express.json());
+
+//routes
 app.use("/api/refresh", refreshRoute);
 
 app.get("/", (req, res) => {
-    res.send("LewisCal is running");
+    res.send("LewisCal Backend is Running");
 });
 
-app.post('/import-ics', async (req, res) => {
-    try {
-        const { url } = req.body;
-
-        if (!url) {
-            return res.status(400).json({ error: "Missing calendar URL" });
-        }
-
-        const response = await fetch(url);
-        const icsText = await response.text();
-
-        const events = ical.parseICS(icsText);
-
-        res.json(events);
-
-    } catch (error) {
-        console.error("ICS import failed:", error);
-        res.status(500).json({ error: "Failed to import calendar" });
-    }
-});
-
-app.post('/api/save-calendar-url', (req, res) => {
+//optioon to store calendar URL
+app.post("/api/save-calendar-url", (req, res) => {
     const { url } = req.body;
 
     if (!url) {
         return res.status(400).json({ error: "Missing calendar URL" });
     }
 
-    const storagePath = path.join(__dirname, 'storage.json');
-
+    const storagePath = path.join(__dirname, "storage.json");
     const data = { calendarUrl: url };
 
     fs.writeFile(storagePath, JSON.stringify(data, null, 2), (err) => {
@@ -63,6 +44,7 @@ app.post('/api/save-calendar-url', (req, res) => {
     });
 });
 
+//start server
 app.listen(PORT, () => {
     console.log(`Backend server running on port ${PORT}`);
 });
