@@ -1,6 +1,6 @@
 async function checkForUpdates() {
     try {
-        const res = await fetch("http://localhost:3001/api/refresh");
+        const res = await fetch("https://lewiscalbackend-a2c5ctddhwcthehx.canadacentral-01.azurewebsites.net/api/refresh");
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
         if (data.updated && data.events) {
@@ -36,12 +36,7 @@ function displayEvents(events) {
     });
 }
 
-// ----------------- Validation + Import logic -----------------
-
-/**
- * Validate that a URL is http(s) and likely points to an .ics resource.
- * Accepts .ics in pathname or filename; allows query strings.
- */
+// validate the path 
 function isValidCalendarUrl(url) {
     if (!url || typeof url !== 'string') return false;
     try {
@@ -78,10 +73,7 @@ function setMessage(text, isError = false) {
     el.style.color = isError ? '#b91c1c' : '#064e3b';
 }
 
-/**
- * Import calendar via backend. Performs client-side validation first.
- * Uses backend endpoint at http://localhost:3001/import-ics
- */
+//import cal by backend
 async function importCalendar() {
     const inputEl = document.getElementById("calendarLink");
     const url = inputEl ? inputEl.value.trim() : '';
