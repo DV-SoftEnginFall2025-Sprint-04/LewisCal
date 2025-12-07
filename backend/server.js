@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const refreshRoute = require('./routes/refresh');
-const fetch = require('node-fetch');
+// replace top-level require('node-fetch') with a dynamic import wrapper
+const fetch = (...args) => import('node-fetch').then(mod => mod.default(...args));
 const ical = require('ical');
 const fs = require('fs');
 const path = require('path');
@@ -63,6 +64,12 @@ app.post('/api/save-calendar-url', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Backend server running on port ${PORT}`);
-});
+// ensure the app is exported for tests and only listen when run directly
+module.exports = app;
+
+if (require.main === module) {
+  const port = process.env.PORT || 3001;
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
+}
