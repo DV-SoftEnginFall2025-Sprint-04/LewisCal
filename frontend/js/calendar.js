@@ -6,7 +6,17 @@ async function checkForUpdates() {
         if (data.updated && data.events) {
             console.log("Updated calendar data:", data.events);
             displayEvents(data.events);
-            setMessage("Calendar updated!", false);
+
+            // Show "Calendar updated" only if user has provided/imported a calendar
+            const inputEl = document.getElementById('calendarLink');
+            const hasInputUrl = inputEl && inputEl.value.trim().length > 0;
+            const importedBefore = localStorage.getItem('calendarImported') === '1';
+
+            if (hasInputUrl || importedBefore) {
+                setMessage("Calendar updated!", false);
+            } else {
+                console.log('Update received but no calendar URL provided — skipping visible update message.');
+            }
         }
     } catch (error) {
         console.error('Failed to check for updates:', error);
@@ -124,6 +134,13 @@ async function importCalendar() {
         const events = await response.json();
         console.log("Imported events:", events);
 
+        // mark that user imported/provided a calendar so update messages are allowed
+        localStorage.setItem('calendarImported', '1');
+
+        // enable delete button after successful import
+        const delBtn = document.getElementById('deleteBtn');
+        if (delBtn) delBtn.disabled = false;
+
         // events from some parsers may be an object keyed by uid — normalize to array
         const normalized = Array.isArray(events) ? events : Object.values(events || {});
         if (normalized.length === 0) {
@@ -138,14 +155,51 @@ async function importCalendar() {
     }
 }
 
-// Real-time validation: enable/disable button and show hints
+/**
+ * Delete imported calendar on the server and clear local flag/UI
+ */
+async function deleteCalendar() {
+    const btn = document.getElementById('deleteBtn');
+    if (!confirm('Delete the imported calendar and remove stored events?')) return;
+
+    if (btn) btn.disabled = true;
+    setMessage('Deleting calendar...', false);
+
+    try {
+        // backend endpoint expected: /delete-ics (adjust if your server uses a different path)
+        const res = await fetch('http://localhost:3001/delete-ics', { method: 'POST' });
+        if (!res.ok) {
+            const body = await res.text().catch(() => res.statusText);
+            throw new Error(`Server responded ${res.status}: ${body}`);
+        }
+
+        // clear local flag so automatic "updated" messages stop
+        localStorage.removeItem('calendarImported');
+
+        // clear any displayed events if your UI renders them (optional; adjust to your markup)
+        const eventsContainer = document.getElementById('eventsList');
+        if (eventsContainer) eventsContainer.innerHTML = '';
+
+        setMessage('Imported calendar deleted.', false);
+    } catch (err) {
+        console.error('Failed to delete calendar:', err);
+        setMessage('Failed to delete calendar. See console for details.', true);
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
+// In DOMContentLoaded ensure delete button initial state
 document.addEventListener('DOMContentLoaded', () => {
-    fetchCalendarEvents();
+    const deleteBtn = document.getElementById('deleteBtn');
+    const importedBefore = localStorage.getItem('calendarImported') === '1';
+    if (deleteBtn) deleteBtn.disabled = !importedBefore;
+
+    // existing input event listener (keeps import button enabled)
     const input = document.getElementById('calendarLink');
-    const button = input ? input.nextElementSibling : null; // current markup: input then button in same container
+    const button = input ? input.nextElementSibling : null;
 
     if (!input) return;
-
     // initial message element creation
     getMessageEl();
 
@@ -161,9 +215,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (button) button.disabled = false;
         } else {
             setMessage('URL does not look like a .ics link (must be http/https and contain .ics).', true);
-            if (button) button.disabled = false; // still allow import in case some feeds don't use .ics extension
+            if (button) button.disabled = false;
         }
     });
+
+    // fetch events initially
+    fetchCalendarEvents();
 });
 
 checkForUpdates(); // immediately on load

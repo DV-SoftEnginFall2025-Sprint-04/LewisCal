@@ -22,7 +22,8 @@
 
       <div class="import-container">
         <input type="text" id="calendarLink" placeholder="Paste .ics calendar link here" />
-        <button id="importBtn" onclick="importCalendar()">Import Calendar</button>
+        <button id="importBtn" onclick="importCalendar()" class="import-btn">Import Calendar</button>
+        <button id="deleteBtn" onclick="deleteCalendar()" class="delete-btn" title="Remove imported calendar">Delete Calendar</button>
       </div>
       <!-- Message displays below input and button -->
       <div id="calendarMessage" class="calendar-message"></div>
