@@ -15,9 +15,10 @@
         <p class="subtitle">Your simple, elegant calendar solution</p>
       </header>
 
+      <!--import section-->
       <section class="import-section">
         <h2>Import Calendar</h2>
-        <p>Paste .ics calendar link below to import events:</p>
+        <p>Paste an .ics calendar link below to import events:</p>
 
         <div class="import-container">
           <input
@@ -26,8 +27,22 @@
             placeholder="Paste .ics calendar link here" />
           <button onclick="importCalendar()">Import Calendar</button>
         </div>
+
+        <!--success or error msg-->
+        <div id="calendarMessage" class="message-box"></div>
       </section>
 
+      <!--events display-->
+      <section class="events-section">
+        <h2>Your Events</h2>
+
+        <!-- Dynamic event listing -->
+        <div id="events" class="events-container">
+          <!-- Populated by calendar.js -->
+        </div>
+      </section>
+
+      <!--features-->
       <section class="welcome-section">
         <h2>Welcome to LewisCal</h2>
         <p>
@@ -40,33 +55,35 @@
           <div class="feature">
             <div class="feature-icon">📅</div>
             <h3>Easy Scheduling</h3>
-            <p>Quickly add and manage your events</p>
+            <p>Quickly add and manage your events.</p>
           </div>
           <div class="feature">
             <div class="feature-icon">🔔</div>
-            <h3>Smart Reminders</h3>
-            <p>Never miss an important appointment</p>
+            <h3>Smart Updates</h3>
+            <p>Calendar auto-refreshes every minute.</p>
           </div>
           <div class="feature">
-            <div class="feature-icon">👥</div>
-            <h3>Team Collaboration</h3>
-            <p>Share calendars with your team</p>
+            <div class="feature-icon">🎓</div>
+            <h3>Scholarship Events</h3>
+            <p>Includes Celebration of Scholarship activities.</p>
           </div>
         </div>
       </section>
-      <div id="messageBox" class="message-box"></div>
 
+      <!--navbar-->
       <div class="nav-links">
         <a href="index.html" class="btn">Home</a>
         <a href="credits.html" class="btn">Meet the Developers</a>
       </div>
     </div>
 
+    
     <footer>
       <div class="container" style="padding: 0.5rem;">
         <p>&copy; 2025 LewisCal. All rights reserved.</p>
       </div>
     </footer>
+
     <script src="js/calendar.js"></script>
   </body>
 </html>
