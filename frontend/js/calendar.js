@@ -1,40 +1,8 @@
-//backend url
+// backend URL
 const BACKEND_URL = "https://lewiscalbackend-a2c5ctddhwcthehx.canadacentral-01.azurewebsites.net/api/refresh";
 
-//update checking
-async function checkForUpdates() {
-    try {
-        const res = await fetch(BACKEND_URL);
-        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
 
-        const data = await res.json();
-        if (data.updated && data.events) {
-            displayEvents(data.events);
-            setMessage("Calendar updated!", false);
-        }
-    } catch (err) {
-        console.error("Failed to check for updates:", err);
-        setMessage("Failed to refresh calendar.", true);
-    }
-}
-
-async function fetchCalendarEvents() {
-    try {
-        const res = await fetch(BACKEND_URL);
-        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-
-        const data = await res.json();
-        if (data.events) displayEvents(data.events);
-
-        return data.events;
-    } catch (err) {
-        console.error("Failed to fetch calendar events:", err);
-        setMessage("Failed to load calendar events.", true);
-    }
-}
-
-
-//cleaner formatting
+// cleanup functions
 function formatDate(dateString) {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -51,30 +19,34 @@ function cleanDescription(text) {
     if (!text) return "";
 
     return text
-        //remove Google Meet info
+        // google meet issues
         .replace(/Join with Google Meet:.*/gi, "")
         .replace(/https:\/\/meet\.google\.com\/\S+/gi, "")
         .replace(/More phone numbers:.*/gi, "")
         .replace(/Learn more about Meet.*/gi, "")
         .replace(/Dial:.*/gi, "")
 
-        // Remove phone numbers
+        // no phone numbers
         .replace(/\+?1?\s*\(?\d{3}\)?[-\s]*\d{3}[-\s]*\d{4}/g, "")
 
-        // Remove URLs
+        // remove urls
         .replace(/https?:\/\/\S+/gi, "")
 
+        // remove common footer text
         .replace(/Information provided by.*/gi, "")
         .replace(/Provided under license.*/gi, "")
+
+        // cleaner formatting
         .replace(/\\n/g, " ")
         .replace(/\s+/g, " ")
         .trim();
 }
 
 
-// display events
+// event display function
 function displayEvents(events) {
 
+    // remove events without start date
     events = events.filter(e => e.start);
 
     const container = document.getElementById("events");
@@ -87,9 +59,10 @@ function displayEvents(events) {
         return;
     }
 
-    // event sort
+    // sort events by date
     events.sort((a, b) => new Date(a.start) - new Date(b.start));
 
+    // event cards
     events.forEach(event => {
         const card = document.createElement("div");
         card.className = "event-card";
@@ -98,7 +71,7 @@ function displayEvents(events) {
             <h3>${event.title || "Untitled Event"}</h3>
             <p><strong>Date:</strong> ${formatDate(event.start)}</p>
             ${event.location ? `<p><strong>Location:</strong> ${event.location}</p>` : ""}
-            ${event.description ? `<p>${cleanDescription(event.description)}</p>` : ""}           
+            ${event.description ? `<p>${cleanDescription(event.description)}</p>` : ""}
         `;
 
         container.appendChild(card);
@@ -106,7 +79,7 @@ function displayEvents(events) {
 }
 
 
-//validate calendar URL
+// validate url function
 function isValidCalendarUrl(url) {
     if (!url) return false;
     try {
@@ -118,7 +91,7 @@ function isValidCalendarUrl(url) {
 }
 
 
-//message handling
+// message display functions
 function getMessageEl() {
     let el = document.getElementById("calendarMessage");
     if (!el) {
@@ -138,7 +111,7 @@ function setMessage(msg, isError = false) {
 }
 
 
-//import calendar function
+// import calendar function
 async function importCalendar() {
     const inputEl = document.getElementById("calendarLink");
     const url = inputEl.value.trim();
@@ -157,7 +130,6 @@ async function importCalendar() {
 
     try {
         const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(url)}`;
-
         const res = await fetch(fullUrl);
         const data = await res.json();
 
@@ -166,8 +138,12 @@ async function importCalendar() {
             return;
         }
 
+        //display events
         displayEvents(data.events);
         setMessage(`Loaded ${data.events.length} events`, false);
+
+        //save url so it doesnt refresh and lose it
+        localStorage.setItem("calendarURL", url);
 
     } catch (err) {
         console.error("Error importing:", err);
@@ -176,12 +152,50 @@ async function importCalendar() {
 }
 
 
-// load events on page load
+// auto refresh function updated to check for stored url
+async function checkForUpdates() {
+    try {
+        const savedUrl = localStorage.getItem("calendarURL");
+
+        if (!savedUrl) {
+            console.log("No calendar URL saved. Skipping refresh.");
+            return;
+        }
+
+        const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(savedUrl)}`;
+        const res = await fetch(fullUrl);
+
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+
+        const data = await res.json();
+
+        if (data.updated && data.events) {
+            displayEvents(data.events);
+            setMessage("Calendar updated!", false);
+        }
+
+    } catch (err) {
+        console.error("Failed to refresh calendar:", err);
+    }
+}
+
+
+//page load: check for saved URL and load events
 document.addEventListener("DOMContentLoaded", () => {
-    fetchCalendarEvents();
+    const savedUrl = localStorage.getItem("calendarURL");
+
+    if (savedUrl) {
+        const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(savedUrl)}`;
+        fetch(fullUrl)
+            .then(res => res.json())
+            .then(data => {
+                if (data.events) displayEvents(data.events);
+            })
+            .catch(err => console.error("Load error:", err));
+    }
+
     getMessageEl();
 });
 
-//auto refresh
-checkForUpdates();
+// auto-refresh every 60 seconds
 setInterval(checkForUpdates, 60000);
