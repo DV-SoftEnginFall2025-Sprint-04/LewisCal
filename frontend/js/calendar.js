@@ -1,17 +1,14 @@
-// set backend URL
+//backend url
 const BACKEND_URL = "https://lewiscalbackend-a2c5ctddhwcthehx.canadacentral-01.azurewebsites.net/api/refresh";
 
-//fetch updates
-
+//update checking
 async function checkForUpdates() {
     try {
         const res = await fetch(BACKEND_URL);
         if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
 
         const data = await res.json();
-        
         if (data.updated && data.events) {
-            console.log("Updated calendar:", data.events);
             displayEvents(data.events);
             setMessage("Calendar updated!", false);
         }
@@ -36,11 +33,13 @@ async function fetchCalendarEvents() {
     }
 }
 
-//display events
 
+//cleaner formatting
 function formatDate(dateString) {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
+    if (isNaN(date)) return "N/A";
+
     return date.toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
@@ -52,24 +51,41 @@ function cleanDescription(text) {
     if (!text) return "";
 
     return text
-        .replace(/Information provided by.*/gi, "")   // remove credit lines
+        //remove Google Meet info
+        .replace(/Join with Google Meet:.*/gi, "")
+        .replace(/https:\/\/meet\.google\.com\/\S+/gi, "")
+        .replace(/More phone numbers:.*/gi, "")
+        .replace(/Learn more about Meet.*/gi, "")
+        .replace(/Dial:.*/gi, "")
+
+        // Remove phone numbers
+        .replace(/\+?1?\s*\(?\d{3}\)?[-\s]*\d{3}[-\s]*\d{4}/g, "")
+
+        // Remove URLs
+        .replace(/https?:\/\/\S+/gi, "")
+
+        .replace(/Information provided by.*/gi, "")
         .replace(/Provided under license.*/gi, "")
-        .replace(/www\..*/gi, "")                    // remove URLs
-        .replace(/\\n/g, " ")                         // remove \n
-        .replace(/\s+/g, " ")                         // collapse spaces
+        .replace(/\\n/g, " ")
+        .replace(/\s+/g, " ")
         .trim();
 }
 
+
+// display events
 function displayEvents(events) {
     const container = document.getElementById("events");
     if (!container) return;
 
-    container.innerHTML = ""; // clear old events
+    container.innerHTML = "";
 
     if (!events || events.length === 0) {
         container.innerHTML = "<p>No events found.</p>";
         return;
     }
+
+    // event sort
+    events.sort((a, b) => new Date(a.start) - new Date(b.start));
 
     events.forEach(event => {
         const card = document.createElement("div");
@@ -77,19 +93,22 @@ function displayEvents(events) {
 
         card.innerHTML = `
             <h3>${event.title || "Untitled Event"}</h3>
+
             <p><strong>Date:</strong> ${formatDate(event.start)}</p>
+
             ${event.location ? `<p><strong>Location:</strong> ${event.location}</p>` : ""}
+
             ${event.description ? `<p>${cleanDescription(event.description)}</p>` : ""}
+
             <p class="source-tag">${event.source}</p>
         `;
-
 
         container.appendChild(card);
     });
 }
 
-//validate calendar URL
 
+//validate calendar URL
 function isValidCalendarUrl(url) {
     if (!url) return false;
     try {
@@ -100,8 +119,8 @@ function isValidCalendarUrl(url) {
     }
 }
 
-//inline message handling
 
+//message handling
 function getMessageEl() {
     let el = document.getElementById("calendarMessage");
     if (!el) {
@@ -120,8 +139,8 @@ function setMessage(msg, isError = false) {
     el.style.color = isError ? "#b91c1c" : "#064e3b";
 }
 
-//import calendar
 
+//import calendar function
 async function importCalendar() {
     const inputEl = document.getElementById("calendarLink");
     const url = inputEl.value.trim();
@@ -158,12 +177,13 @@ async function importCalendar() {
     }
 }
 
-//page load
 
+// load events on page load
 document.addEventListener("DOMContentLoaded", () => {
     fetchCalendarEvents();
     getMessageEl();
 });
 
+//auto refresh
 checkForUpdates();
 setInterval(checkForUpdates, 60000);
