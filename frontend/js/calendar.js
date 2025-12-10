@@ -74,6 +74,9 @@ function cleanDescription(text) {
 
 // display events
 function displayEvents(events) {
+
+    events = events.filter(e => e.start);
+    
     const container = document.getElementById("events");
     if (!container) return;
 
