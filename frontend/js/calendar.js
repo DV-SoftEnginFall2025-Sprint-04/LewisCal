@@ -76,7 +76,7 @@ function cleanDescription(text) {
 function displayEvents(events) {
 
     events = events.filter(e => e.start);
-    
+
     const container = document.getElementById("events");
     if (!container) return;
 
@@ -96,14 +96,9 @@ function displayEvents(events) {
 
         card.innerHTML = `
             <h3>${event.title || "Untitled Event"}</h3>
-
             <p><strong>Date:</strong> ${formatDate(event.start)}</p>
-
             ${event.location ? `<p><strong>Location:</strong> ${event.location}</p>` : ""}
-
-            ${event.description ? `<p>${cleanDescription(event.description)}</p>` : ""}
-
-            <p class="source-tag">${event.source}</p>
+            ${event.description ? `<p>${cleanDescription(event.description)}</p>` : ""}           
         `;
 
         container.appendChild(card);
