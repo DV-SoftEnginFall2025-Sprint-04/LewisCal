@@ -15,33 +15,6 @@
         <p class="subtitle">Your simple, elegant calendar solution</p>
       </header>
 
-      <!--import section-->
-      <section class="import-section">
-        <h2>Import Calendar</h2>
-        <p>Paste an .ics calendar link below to import events:</p>
-
-        <div class="import-container">
-          <input
-            type="text"
-            id="calendarLink"
-            placeholder="Paste .ics calendar link here" />
-          <button onclick="importCalendar()">Import Calendar</button>
-        </div>
-
-        <!--success or error msg-->
-        <div id="calendarMessage" class="message-box"></div>
-      </section>
-
-      <!--events display-->
-      <section class="events-section">
-        <h2>Your Events</h2>
-
-        <!-- Dynamic event listing -->
-        <div id="events" class="events-container">
-          <!-- Populated by calendar.js -->
-        </div>
-      </section>
-
       <!--features-->
       <section class="welcome-section">
         <h2>Welcome to LewisCal</h2>
@@ -67,6 +40,33 @@
             <h3>Scholarship Events</h3>
             <p>Includes Celebration of Scholarship activities.</p>
           </div>
+        </div>
+      </section>
+
+      <!--import section-->
+      <section class="import-section">
+        <h2>Import Calendar</h2>
+        <p>Paste an .ics calendar link below to import events:</p>
+
+        <div class="import-container">
+          <input
+            type="text"
+            id="calendarLink"
+            placeholder="Paste .ics calendar link here" />
+          <button onclick="importCalendar()">Import Calendar</button>
+        </div>
+
+        <!--success or error msg-->
+        <div id="calendarMessage" class="message-box"></div>
+      </section>
+
+      <!--events display-->
+      <section class="events-section">
+        <h2>Your Events</h2>
+
+        <!-- Dynamic event listing -->
+        <div id="events" class="events-container">
+          <!-- Populated by calendar.js -->
         </div>
       </section>
 
