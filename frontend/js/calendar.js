@@ -38,6 +38,28 @@ async function fetchCalendarEvents() {
 
 //display events
 
+function formatDate(dateString) {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    });
+}
+
+function cleanDescription(text) {
+    if (!text) return "";
+
+    return text
+        .replace(/Information provided by.*/gi, "")   // remove credit lines
+        .replace(/Provided under license.*/gi, "")
+        .replace(/www\..*/gi, "")                    // remove URLs
+        .replace(/\\n/g, " ")                         // remove \n
+        .replace(/\s+/g, " ")                         // collapse spaces
+        .trim();
+}
+
 function displayEvents(events) {
     const container = document.getElementById("events");
     if (!container) return;
@@ -55,12 +77,12 @@ function displayEvents(events) {
 
         card.innerHTML = `
             <h3>${event.title || "Untitled Event"}</h3>
-            <p><strong>Start:</strong> ${event.start}</p>
-            <p><strong>End:</strong> ${event.end || "N/A"}</p>
-            <p><strong>Location:</strong> ${event.location || "Not specified"}</p>
-            <p><strong>Description:</strong> ${event.description || "None"}</p>
+            <p><strong>Date:</strong> ${formatDate(event.start)}</p>
+            ${event.location ? `<p><strong>Location:</strong> ${event.location}</p>` : ""}
+            ${event.description ? `<p>${cleanDescription(event.description)}</p>` : ""}
             <p class="source-tag">${event.source}</p>
         `;
+
 
         container.appendChild(card);
     });
