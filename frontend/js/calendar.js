@@ -241,6 +241,51 @@ async function importCalendar() {
     }
 }
 
+// import calendar from uploaded .ics file
+function importCalendarFile() {
+    const fileInput = document.getElementById("calendarFile");
+    const file = fileInput && fileInput.files[0];
+
+    if (!file) {
+        setMessage("Please choose a .ics file to upload.", true);
+        return;
+    }
+
+    if (!file.name.toLowerCase().endsWith(".ics")) {
+        setMessage("Please upload a valid .ics calendar file.", true);
+        return;
+    }
+
+    setMessage("Importing calendar file...");
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        try {
+            const icsText = e.target.result;
+            const events = parseICS(icsText);
+
+            if (!events || events.length === 0) {
+                setMessage("No events found in this .ics file.", true);
+                displayEvents([]);
+                return;
+            }
+
+            displayEvents(events);
+            setMessage(`Loaded ${events.length} events from file.`, false);
+        } catch (err) {
+            console.error("Error parsing .ics file:", err);
+            setMessage("Error reading calendar file.", true);
+        }
+    };
+
+    reader.onerror = () => {
+        console.error("FileReader error");
+        setMessage("Error reading calendar file.", true);
+    };
+
+    reader.readAsText(file);
+}
 
 // auto refresh function updated to check for stored url
 async function checkForUpdates() {
