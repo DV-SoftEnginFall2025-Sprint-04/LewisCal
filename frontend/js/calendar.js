@@ -261,6 +261,35 @@ async function importCalendar() {
     }
 }
 
+// delete imported calendar (clears saved URL, UI, and notifies backend if available)
+async function deleteCalendar() {
+    const btn = document.getElementById('deleteBtn');
+    if (!confirm('Delete the imported calendar and remove displayed events?')) return;
+
+    if (btn) btn.disabled = true;
+    setMessage('Deleting calendar...', false);
+
+    try {
+        // best-effort notify backend: derive base from BACKEND_URL
+        let base = BACKEND_URL;
+        const apiIdx = BACKEND_URL.indexOf('/api');
+        if (apiIdx !== -1) base = BACKEND_URL.slice(0, apiIdx);
+        const deleteUrl = base + '/delete-ics';
+
+        await fetch(deleteUrl, { method: 'POST' }).catch(() => {});
+    } catch (err) {
+        console.warn('Backend delete request failed:', err);
+    }
+
+    // clear local saved URL and UI
+    localStorage.removeItem('calendarURL');
+    const events = document.getElementById('events');
+    if (events) events.innerHTML = '';
+
+    setMessage('Imported calendar deleted.', false);
+    if (btn) btn.disabled = false;
+}
+
 // import calendar from uploaded .ics file
 function importCalendarFile() {
     const fileInput = document.getElementById("calendarFile");
@@ -350,6 +379,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     getMessageEl();
+    const deleteBtn = document.getElementById('deleteBtn');
+    if (deleteBtn) deleteBtn.disabled = !savedUrl;
 });
 
 // auto-refresh every 60 seconds
