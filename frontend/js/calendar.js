@@ -60,6 +60,75 @@ function getCategoryForEvent(event) {
     return "other";
 }
 
+function parseICS(icsText) {
+    const events = [];
+    if (!icsText) return events;
+    
+    const rawLines = icsText.replace(/\r\n/g, "\n").split("\n");
+
+    const lines = [];
+    for (let i = 0; i < rawLines.length; i++) {
+        const line = rawLines[i];
+        if (line.startsWith(" ") && lines.length > 0) {
+            lines[lines.length - 1] += line.slice(1);
+        } else {
+            lines.push(line);
+        }
+    }
+
+    let currentEvent = null;
+
+    for (const line of lines) {
+        if (line.startsWith("BEGIN:VEVENT")) {
+            currentEvent = { title: "", start: null, location: "", description: "" };
+        } else if (line.startsWith("END:VEVENT")) {
+            if (currentEvent && currentEvent.start) {
+                events.push(currentEvent);
+            }
+            currentEvent = null;
+        } else if (currentEvent) {
+            if (line.startsWith("SUMMARY:")) {
+                currentEvent.title = line.slice("SUMMARY:".length).trim();
+            } else if (line.startsWith("LOCATION:")) {
+                currentEvent.location = line.slice("LOCATION:".length).trim();
+            } else if (line.startsWith("DESCRIPTION:")) {
+                currentEvent.description = line.slice("DESCRIPTION:".length).trim();
+            } else if (line.startsWith("DTSTART")) {
+                const parts = line.split(":");
+                const value = parts[parts.length - 1].trim();
+                currentEvent.start = parseICSDate(value);
+            }
+        }
+    }
+
+    return events;
+}
+
+function parseICSDate(value) {
+    if (!value) return null;
+
+    // date-only: 20250110
+    if (/^\d{8}$/.test(value)) {
+        const year = value.slice(0, 4);
+        const month = value.slice(4, 6);
+        const day = value.slice(6, 8);
+        return new Date(`${year}-${month}-${day}T00:00:00`);
+    }
+
+    if (/^\d{8}T\d{6}Z?$/.test(value)) {
+        const year = value.slice(0, 4);
+        const month = value.slice(4, 6);
+        const day = value.slice(6, 8);
+        const hour = value.slice(9, 11);
+        const min = value.slice(11, 13);
+        const sec = value.slice(13, 15);
+        return new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}Z`);
+    }
+
+    const d = new Date(value);
+    return isNaN(d) ? null : d;
+}
+
 // event display function
 function displayEvents(events) {
 
