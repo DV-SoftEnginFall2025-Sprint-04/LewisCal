@@ -42,6 +42,23 @@ function cleanDescription(text) {
         .trim();
 }
 
+function getCategoryForEvent(event) {
+    const text = (
+        (event.title || "") + " " + (event.description || "")
+    ).toLowerCase();
+
+    if (text.includes("class") || text.includes("lecture") || text.includes("exam")) {
+        return "school";
+    }
+    if (text.includes("meeting") || text.includes("shift") || text.includes("work")) {
+        return "work";
+    }
+    if (text.includes("birthday") || text.includes("party") || text.includes("dinner")) {
+        return "personal";
+    }
+
+    return "other";
+}
 
 // event display function
 function displayEvents(events) {
@@ -67,7 +84,8 @@ function displayEvents(events) {
         const card = document.createElement("div");
         card.className = "event-card";
 
-        const category = (event.category || "other").toLowerCase().replace(/\s+/g, "-");
+        const rawCategory = event.category || getCategoryForEvent(event);
+        const category = rawCategory.toLowerCase().replace(/\s+/g, "-");
         card.classList.add(`event-category-${category}`);
 
         card.innerHTML = `
