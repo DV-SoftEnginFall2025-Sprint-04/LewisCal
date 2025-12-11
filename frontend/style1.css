@@ -377,6 +377,7 @@ footer {
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  display: none; /* hide by default until there are events */
 }
 
 .events-section h2 {
@@ -389,9 +390,18 @@ footer {
 /* EVENTS CONTAINER */
 .events-container {
   margin-top: 10px;
-  display: flex;
+  display: none; /* hidden until events exist */
   flex-direction: column;
   gap: 16px;
+}
+
+/* Show section/container only when events exist */
+.events-section.has-events {
+  display: block;
+}
+
+.events-container.has-events {
+  display: flex;
 }
 
 /* EVENT CARDS */

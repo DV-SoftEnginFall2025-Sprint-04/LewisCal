@@ -143,8 +143,14 @@ function displayEvents(events, calendarId = 'default') {
     prev.forEach(n => n.remove());
 
     if (!events || events.length === 0) {
-        // if nothing else shown, show a placeholder
-        if (container.children.length === 0) container.innerHTML = "<p>No events found.</p>";
+        // if no event-cards remain at all, clear and hide the events section
+        const remaining = container.querySelectorAll('.event-card');
+        if (!remaining || remaining.length === 0) {
+            container.innerHTML = '';
+            container.classList.remove('has-events');
+            const section = document.querySelector('.events-section');
+            if (section) section.classList.remove('has-events');
+        }
         return;
     }
 
@@ -174,6 +180,11 @@ function displayEvents(events, calendarId = 'default') {
 
         container.appendChild(card);
     });
+
+    // ensure visible state for the events area
+    container.classList.add('has-events');
+    const section = document.querySelector('.events-section');
+    if (section) section.classList.add('has-events');
 }
 
 // --- calendar storage and UI helpers ---
@@ -306,6 +317,15 @@ async function removeCalendar(id) {
     }
 
     setMessage('Calendar removed.', false);
+
+    // if no event cards remain, hide the events area
+    const remaining = document.querySelectorAll('.event-card');
+    if (!remaining || remaining.length === 0) {
+        const container = document.getElementById('events');
+        if (container) container.classList.remove('has-events');
+        const section = document.querySelector('.events-section');
+        if (section) section.classList.remove('has-events');
+    }
 }
 
 function toggleCalendarVisibility(id) {
@@ -461,6 +481,12 @@ async function deleteCalendar() {
 
     // update UI list
     renderCalendars();
+
+    // hide events section since we've removed everything
+    const container = document.getElementById('events');
+    if (container) container.classList.remove('has-events');
+    const section = document.querySelector('.events-section');
+    if (section) section.classList.remove('has-events');
 
     setMessage('Imported calendar deleted.', false);
     if (btn) btn.disabled = true;
