@@ -197,6 +197,7 @@ function getMessageEl() {
 function setMessage(msg, isError = false) {
     const el = getMessageEl();
     el.textContent = msg;
+    el.style.display = "block";
     el.style.color = isError ? "#b91c1c" : "#064e3b";
 }
 
