@@ -435,3 +435,44 @@ footer {
   background-color: #f3f4f6;
 }
 
+.calendar-message {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
+  font-size: 0.95rem;
+  min-height: 20px;
+  display: none;
+  animation: slideIn 0.3s ease;
+}
+
+.calendar-message.show {
+  display: block;
+}
+
+.calendar-message.success {
+  background: linear-gradient(135deg, #c8f7c5 0%, #a8f5a1 100%);
+  color: #27632a;
+  border: 2px solid #27632a;
+  box-shadow: 0 4px 12px rgba(39, 99, 42, 0.25);
+}
+
+.calendar-message.error {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c2c7 100%);
+  color: #8a1c1c;
+  border: 2px solid #8a1c1c;
+  box-shadow: 0 4px 12px rgba(138, 28, 28, 0.25);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

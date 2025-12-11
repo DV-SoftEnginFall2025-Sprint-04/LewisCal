@@ -196,9 +196,28 @@ function getMessageEl() {
 
 function setMessage(msg, isError = false) {
     const el = getMessageEl();
+    if (!el) return;
+
     el.textContent = msg;
-    el.style.display = "block";
-    el.style.color = isError ? "#b91c1c" : "#064e3b";
+
+    if (msg) {
+        el.classList.add('show');
+        el.classList.remove('error', 'success');
+        
+        if (isError) {
+            el.classList.add('error');
+        } else {
+            el.classList.add('success');
+            // auto-dismiss success messages after 5 seconds
+            setTimeout(() => {
+                if (el.classList.contains('success')) {
+                    el.classList.remove('show');
+                }
+            }, 5000);
+        }
+    } else {
+        el.classList.remove('show', 'error', 'success');
+    }
 }
 
 
