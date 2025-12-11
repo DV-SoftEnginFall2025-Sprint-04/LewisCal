@@ -490,6 +490,18 @@ footer {
 /* hide events for hidden calendars */
 .event-card.hidden { display: none; opacity: 0.35; }
 
+.delete-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.08);
+  color: #800707;
+  cursor: pointer;
+  font-weight: 600;
+}
+.delete-btn:hover { background: rgba(193,8,8,0.06); }
+.delete-btn:active { transform: translateY(1px); }
+
 .calendar-message {
   margin-top: 14px;
   padding: 12px 16px;

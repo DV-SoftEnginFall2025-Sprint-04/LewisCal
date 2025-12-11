@@ -189,12 +189,21 @@ function saveCalendarsToStorage(list) {
     localStorage.setItem('calendars', JSON.stringify(list));
 }
 
-function addCalendarEntry(url, name) {
+function addCalendarEntry(url, name, events) {
     const list = getCalendarsFromStorage();
     const existing = list.find(c => c.url === url);
-    if (existing) return existing.id;
+    if (existing) {
+        // update events if provided
+        if (events) {
+            existing.events = events;
+            saveCalendarsToStorage(list);
+        }
+        return existing.id;
+    }
     const id = `cal_${Date.now()}_${Math.floor(Math.random()*1000)}`;
-    list.push({ id, url, name: name || url.replace(/^https?:\/\//, '').split(/[/?#]/)[0], visible: true });
+    const entry = { id, url, name: name || url.replace(/^https?:\/\//, '').split(/[/?#]/)[0], visible: true };
+    if (events) entry.events = events;
+    list.push(entry);
     saveCalendarsToStorage(list);
     renderCalendars();
     return id;
@@ -235,12 +244,68 @@ function renderCalendars() {
         knob.className = 'knob';
         toggle.appendChild(knob);
         toggle.addEventListener('click', () => toggleCalendarVisibility(cal.id));
-
         actions.appendChild(toggle);
+
+        // per-calendar delete button
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.textContent = 'Delete';
+        delBtn.title = 'Delete this calendar';
+        delBtn.addEventListener('click', (e) => { e.stopPropagation(); removeCalendar(cal.id); });
+        actions.appendChild(delBtn);
         item.appendChild(meta);
         item.appendChild(actions);
         container.appendChild(item);
     });
+}
+
+/**
+ * Remove a specific calendar by id: remove storage entry, DOM events, and notify backend
+ */
+async function removeCalendar(id) {
+    const list = getCalendarsFromStorage();
+    const idx = list.findIndex(c => c.id === id);
+    if (idx === -1) return;
+    const cal = list[idx];
+    if (!confirm(`Delete calendar:\n${cal.url}\nThis will remove stored events for this calendar.`)) return;
+
+    // try backend deletion with url payload
+    try {
+        let base = BACKEND_URL;
+        const apiIdx = BACKEND_URL.indexOf('/api');
+        if (apiIdx !== -1) base = BACKEND_URL.slice(0, apiIdx);
+        const deleteUrl = base + '/delete-ics';
+        await fetch(deleteUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: cal.url })
+        }).catch(() => {});
+    } catch (e) {
+        console.warn('Backend delete failed for', cal.url, e);
+    }
+
+    // remove events of this calendar from DOM
+    const events = document.querySelectorAll(`[data-calendar-id="${id}"]`);
+    events.forEach(ev => ev.remove());
+
+    // remove from storage and re-render
+    list.splice(idx, 1);
+    saveCalendarsToStorage(list);
+    renderCalendars();
+
+    // update global delete button state
+    const deleteBtn = document.getElementById('deleteBtn');
+    if (deleteBtn) deleteBtn.disabled = list.length === 0;
+
+    // if this calendar was stored in the legacy single `calendarURL`, clear it
+    try {
+        const savedUrl = localStorage.getItem('calendarURL');
+        if (savedUrl && savedUrl === cal.url) localStorage.removeItem('calendarURL');
+    } catch (e) {
+        console.warn('Could not access localStorage to clear legacy calendarURL', e);
+    }
+
+    setMessage('Calendar removed.', false);
 }
 
 function toggleCalendarVisibility(id) {
@@ -347,6 +412,11 @@ async function importCalendar() {
         //save url for legacy support
         localStorage.setItem("calendarURL", url);
 
+        // clear the input box so user knows import succeeded
+        try {
+            inputEl.value = "";
+        } catch (e) {}
+
         // enable global delete button
         const deleteBtn = document.getElementById('deleteBtn');
         if (deleteBtn) deleteBtn.disabled = false;
@@ -426,9 +496,16 @@ function importCalendarFile() {
                 return;
             }
 
-            // store this local file as a calendar entry and render
-            const fileId = addCalendarEntry('local-file:' + file.name + ':' + Date.now(), file.name);
-            displayEvents(events, fileId);
+            // normalize events (convert Date objects to ISO strings)
+            const normalized = events.map(ev => ({
+                ...ev,
+                start: ev.start && ev.start.toISOString ? ev.start.toISOString() : ev.start
+            }));
+
+            // store this local file as a calendar entry (persist events) and render
+            const fileUrl = 'local-file:' + file.name + ':' + Date.now();
+            const fileId = addCalendarEntry(fileUrl, file.name, normalized);
+            displayEvents(normalized, fileId);
             setMessage(`Loaded ${events.length} events from file.`, false);
 
             // enable global delete button
@@ -470,6 +547,9 @@ async function checkForUpdates() {
         // fetch updates for each stored calendar
         for (const cal of calendars) {
             try {
+                // skip update fetch for local-file imports (they are stored locally)
+                if (cal.url && cal.url.startsWith('local-file:')) continue;
+
                 const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(cal.url)}`;
                 const res = await fetch(fullUrl);
                 if (!res.ok) continue;
@@ -498,9 +578,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderCalendars();
 
     if (calendars && calendars.length > 0) {
-        // fetch events for each stored calendar
+        // load events for each stored calendar (use persisted events for local files)
         for (const cal of calendars) {
             try {
+                if (cal.events && Array.isArray(cal.events)) {
+                    // stored events (from file import) - ensure start values are dates/iso strings
+                    displayEvents(cal.events, cal.id);
+                    continue;
+                }
+
+                // otherwise try fetching from backend (URL-based calendars)
                 const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(cal.url)}`;
                 const res = await fetch(fullUrl);
                 if (!res.ok) continue;
