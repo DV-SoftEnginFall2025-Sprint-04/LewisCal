@@ -347,6 +347,10 @@ async function importCalendar() {
         //save url for legacy support
         localStorage.setItem("calendarURL", url);
 
+        // enable global delete button
+        const deleteBtn = document.getElementById('deleteBtn');
+        if (deleteBtn) deleteBtn.disabled = false;
+
     } catch (err) {
         console.error("Error importing:", err);
         setMessage("Network error importing calendar.", true);
@@ -426,6 +430,10 @@ function importCalendarFile() {
             const fileId = addCalendarEntry('local-file:' + file.name + ':' + Date.now(), file.name);
             displayEvents(events, fileId);
             setMessage(`Loaded ${events.length} events from file.`, false);
+
+            // enable global delete button
+            const deleteBtnFile = document.getElementById('deleteBtn');
+            if (deleteBtnFile) deleteBtnFile.disabled = false;
         } catch (err) {
             console.error("Error parsing .ics file:", err);
             setMessage("Error reading calendar file.", true);
