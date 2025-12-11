@@ -374,12 +374,22 @@ async function deleteCalendar() {
     }
 
     // clear local saved URL and UI
-    localStorage.removeItem('calendarURL');
+    // remove legacy single URL
+    const savedUrl = localStorage.getItem('calendarURL');
+    if (savedUrl) localStorage.removeItem('calendarURL');
+
+    // remove any stored calendar entries so they do not reappear after refresh
+    localStorage.removeItem('calendars');
+
+    // clear displayed events
     const events = document.getElementById('events');
     if (events) events.innerHTML = '';
 
+    // update UI list
+    renderCalendars();
+
     setMessage('Imported calendar deleted.', false);
-    if (btn) btn.disabled = false;
+    if (btn) btn.disabled = true;
 }
 
 // import calendar from uploaded .ics file
