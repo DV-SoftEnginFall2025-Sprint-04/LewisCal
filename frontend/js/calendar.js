@@ -129,29 +129,33 @@ function parseICSDate(value) {
     return isNaN(d) ? null : d;
 }
 
-// event display function
-function displayEvents(events) {
+// event display function (supports per-calendar rendering)
+function displayEvents(events, calendarId = 'default') {
 
     // remove events without start date
-    events = events.filter(e => e.start);
+    events = (events || []).filter(e => e && e.start);
 
     const container = document.getElementById("events");
     if (!container) return;
 
-    container.innerHTML = "";
+    // remove previously-rendered events for this calendar to avoid duplicates
+    const prev = container.querySelectorAll(`[data-calendar-id="${calendarId}"]`);
+    prev.forEach(n => n.remove());
 
     if (!events || events.length === 0) {
-        container.innerHTML = "<p>No events found.</p>";
+        // if nothing else shown, show a placeholder
+        if (container.children.length === 0) container.innerHTML = "<p>No events found.</p>";
         return;
     }
 
     // sort events by date
     events.sort((a, b) => new Date(a.start) - new Date(b.start));
 
-    // event cards
+    // event cards (append to existing list)
     events.forEach(event => {
         const card = document.createElement("div");
         card.className = "event-card";
+        card.dataset.calendarId = calendarId;
 
         const rawCategory = event.category || getCategoryForEvent(event);
         const category = rawCategory.toLowerCase().replace(/\s+/g, "-");
@@ -164,7 +168,93 @@ function displayEvents(events) {
             ${event.description ? `<p>${cleanDescription(event.description)}</p>` : ""}
         `;
 
+        // respect stored visibility
+        const cal = getCalendarsFromStorage().find(c => c.id === calendarId);
+        if (cal && cal.visible === false) card.classList.add('hidden');
+
         container.appendChild(card);
+    });
+}
+
+// --- calendar storage and UI helpers ---
+function getCalendarsFromStorage() {
+    try {
+        const raw = localStorage.getItem('calendars');
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+function saveCalendarsToStorage(list) {
+    localStorage.setItem('calendars', JSON.stringify(list));
+}
+
+function addCalendarEntry(url, name) {
+    const list = getCalendarsFromStorage();
+    const existing = list.find(c => c.url === url);
+    if (existing) return existing.id;
+    const id = `cal_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+    list.push({ id, url, name: name || url.replace(/^https?:\/\//, '').split(/[/?#]/)[0], visible: true });
+    saveCalendarsToStorage(list);
+    renderCalendars();
+    return id;
+}
+
+function renderCalendars() {
+    const container = document.getElementById('calendarsList');
+    if (!container) return;
+    const list = getCalendarsFromStorage();
+    container.innerHTML = '';
+    if (list.length === 0) {
+        container.innerHTML = '<div class="calendar-item"><div class="calendar-name">No calendars imported</div></div>';
+        return;
+    }
+
+    list.forEach(cal => {
+        const item = document.createElement('div');
+        item.className = 'calendar-item';
+        item.dataset.calendarId = cal.id;
+
+        const meta = document.createElement('div');
+        meta.className = 'calendar-meta';
+
+        const name = document.createElement('div');
+        name.className = 'calendar-name';
+        name.title = cal.url;
+        name.textContent = cal.name || cal.url;
+        meta.appendChild(name);
+
+        const actions = document.createElement('div');
+        actions.className = 'calendar-actions';
+
+        const toggle = document.createElement('div');
+        toggle.className = 'toggle' + (cal.visible ? ' on' : '');
+        toggle.setAttribute('role', 'switch');
+        toggle.setAttribute('aria-checked', !!cal.visible);
+        const knob = document.createElement('div');
+        knob.className = 'knob';
+        toggle.appendChild(knob);
+        toggle.addEventListener('click', () => toggleCalendarVisibility(cal.id));
+
+        actions.appendChild(toggle);
+        item.appendChild(meta);
+        item.appendChild(actions);
+        container.appendChild(item);
+    });
+}
+
+function toggleCalendarVisibility(id) {
+    const list = getCalendarsFromStorage();
+    const idx = list.findIndex(c => c.id === id);
+    if (idx === -1) return;
+    list[idx].visible = !list[idx].visible;
+    saveCalendarsToStorage(list);
+    renderCalendars();
+
+    const events = document.querySelectorAll(`[data-calendar-id="${id}"]`);
+    events.forEach(ev => {
+        if (list[idx].visible) ev.classList.remove('hidden');
+        else ev.classList.add('hidden');
     });
 }
 
@@ -248,11 +338,13 @@ async function importCalendar() {
             return;
         }
 
-        //display events
-        displayEvents(data.events);
+        // create or reuse a calendar entry and display events under that id
+        const name = url.replace(/^https?:\/\//, '').split(/[/?#]/)[0];
+        const calId = addCalendarEntry(url, name);
+        displayEvents(data.events, calId);
         setMessage(`Loaded ${data.events.length} events`, false);
 
-        //save url so it doesnt refresh and lose it
+        //save url for legacy support
         localStorage.setItem("calendarURL", url);
 
     } catch (err) {
@@ -316,11 +408,13 @@ function importCalendarFile() {
 
             if (!events || events.length === 0) {
                 setMessage("No events found in this .ics file.", true);
-                displayEvents([]);
+                displayEvents([], 'file_' + Date.now());
                 return;
             }
 
-            displayEvents(events);
+            // store this local file as a calendar entry and render
+            const fileId = addCalendarEntry('local-file:' + file.name + ':' + Date.now(), file.name);
+            displayEvents(events, fileId);
             setMessage(`Loaded ${events.length} events from file.`, false);
         } catch (err) {
             console.error("Error parsing .ics file:", err);
@@ -339,23 +433,36 @@ function importCalendarFile() {
 // auto refresh function updated to check for stored url
 async function checkForUpdates() {
     try {
-        const savedUrl = localStorage.getItem("calendarURL");
-
-        if (!savedUrl) {
-            console.log("No calendar URL saved. Skipping refresh.");
+        const calendars = getCalendarsFromStorage();
+        if (!calendars || calendars.length === 0) {
+            // legacy single-url support
+            const savedUrl = localStorage.getItem("calendarURL");
+            if (!savedUrl) return;
+            const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(savedUrl)}`;
+            const res = await fetch(fullUrl);
+            if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+            const data = await res.json();
+            if (data.updated && data.events) {
+                displayEvents(data.events, 'default');
+                setMessage("Calendar updated!", false);
+            }
             return;
         }
 
-        const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(savedUrl)}`;
-        const res = await fetch(fullUrl);
-
-        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-
-        const data = await res.json();
-
-        if (data.updated && data.events) {
-            displayEvents(data.events);
-            setMessage("Calendar updated!", false);
+        // fetch updates for each stored calendar
+        for (const cal of calendars) {
+            try {
+                const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(cal.url)}`;
+                const res = await fetch(fullUrl);
+                if (!res.ok) continue;
+                const data = await res.json();
+                if (data.updated && data.events) {
+                    displayEvents(data.events, cal.id);
+                    setMessage(`Calendar "${cal.name}" updated!`, false);
+                }
+            } catch (e) {
+                console.warn('Failed to refresh calendar', cal.url, e);
+            }
         }
 
     } catch (err) {
@@ -365,22 +472,42 @@ async function checkForUpdates() {
 
 
 //page load: check for saved URL and load events
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const savedUrl = localStorage.getItem("calendarURL");
+    const calendars = getCalendarsFromStorage();
 
-    if (savedUrl) {
-        const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(savedUrl)}`;
-        fetch(fullUrl)
-            .then(res => res.json())
-            .then(data => {
-                if (data.events) displayEvents(data.events);
-            })
-            .catch(err => console.error("Load error:", err));
+    // render stored calendars UI
+    renderCalendars();
+
+    if (calendars && calendars.length > 0) {
+        // fetch events for each stored calendar
+        for (const cal of calendars) {
+            try {
+                const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(cal.url)}`;
+                const res = await fetch(fullUrl);
+                if (!res.ok) continue;
+                const data = await res.json();
+                if (data && data.events) displayEvents(data.events, cal.id);
+            } catch (e) {
+                console.warn('Load error for', cal.url, e);
+            }
+        }
+    } else if (savedUrl) {
+        // legacy single-url support: add as calendar entry and fetch
+        const id = addCalendarEntry(savedUrl, savedUrl.replace(/^https?:\/\//, '').split(/[/?#]/)[0]);
+        try {
+            const fullUrl = `${BACKEND_URL}?url=${encodeURIComponent(savedUrl)}`;
+            const res = await fetch(fullUrl);
+            const data = await res.json();
+            if (data && data.events) displayEvents(data.events, id);
+        } catch (e) {
+            console.error('Load error:', e);
+        }
     }
 
     getMessageEl();
     const deleteBtn = document.getElementById('deleteBtn');
-    if (deleteBtn) deleteBtn.disabled = !savedUrl;
+    if (deleteBtn) deleteBtn.disabled = !(savedUrl || (calendars && calendars.length > 0));
 });
 
 // auto-refresh every 60 seconds
