@@ -56,6 +56,12 @@
           <button onclick="importCalendar()">Import Calendar</button>
         </div>
 
+        <p style="margin-top: 16px;">Or upload an .ics file:</p>
+        <div class="import-container">
+          <input type="file" id="calendarFile" accept=".ics" />
+          <button onclick="importCalendarFile()">Upload File</button>
+        </div>
+
         <!--success or error msg-->
         <div id="calendarMessage" class="message-box"></div>
       </section>
