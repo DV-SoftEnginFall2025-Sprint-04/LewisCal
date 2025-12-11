@@ -67,6 +67,9 @@ function displayEvents(events) {
         const card = document.createElement("div");
         card.className = "event-card";
 
+        const category = (event.category || "other").toLowerCase().replace(/\s+/g, "-");
+        card.classList.add(`event-category-${category}`);
+
         card.innerHTML = `
             <h3>${event.title || "Untitled Event"}</h3>
             <p><strong>Date:</strong> ${formatDate(event.start)}</p>
