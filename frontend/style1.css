@@ -415,4 +415,23 @@ footer {
   color: #374151;
 }
 
+.event-category-school {
+  border-left: 6px solid #2563eb;
+  background-color: #eff6ff;
+}
+
+.event-category-work {
+  border-left: 6px solid #16a34a;
+  background-color: #ecfdf5;
+}
+
+.event-category-personal {
+  border-left: 6px solid #f97316;
+  background-color: #fff7ed;
+}
+
+.event-category-other {
+  border-left: 6px solid #6b7280;
+  background-color: #f3f4f6;
+}
 
